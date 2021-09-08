@@ -19,11 +19,11 @@ class Database():
         self._tf_base = fh['tfs']
         self._f_base = fh['info/f'][()]
         self.k0 = fh['info/k0'][()]
-        self.surf_coords = fh['info/coordinates'][()]
+        self.source_coordinates = fh['info/source_coordinates'][()]
         self.normal_vectors = fh['info/normal_vectors'][()]
-        self.fp_coords = fh['info/fp_coordinates'][()]
+        self.receiver_coordinates = fh['info/receiver_coordinates'][()]
         self._source_nodes = fh['info/source_nodes'][()]  # these are the nodes available in the database
-        self._receiver_nodes = np.arange(len(self.fp_coords))
+        self._receiver_nodes = np.arange(len(self.receiver_coordinades))
         return True
 
     def setup(self, f, k, receiver_nodes=[], source_nodes=[]):
@@ -47,11 +47,6 @@ class Database():
         self._check_f_range()
         self._nf = len(f)
 
-        # self.tf = np.zeros((self._nrn, self._nsn, self._nf), dtype=complex)
-        # for re_i, re in enumerate(self.receiver_nodes):
-            # for so_i, so in enumerate(self.source_nodes):
-                # self.tf[re_i, so_i] = interp_complex(self.f, self._f_base, self._tf_base[re_i, so_i], left=0)
-
     def superpose(self, Vn):
         """
         Superpose acoustic transfer functions with surface normal velocities
@@ -72,7 +67,6 @@ class Database():
             for ki, k in enumerate(self.k[fi]):
                 f0 = f0_shift(k, self.k0, freq)
                 r = f(f0)  # receiver_nodes, source_nodes
-        #         response[fi, ki, :, :] = np.einsum('rs -> sr', r) * jomega
                 self.response[fi, ki, :, :] = np.einsum('is, rs -> ir', Vn[fi, ki], r) * jomega
 
 
@@ -90,42 +84,7 @@ class Database():
             print('   Selected all source nodes in the database.')
 
         if self.receiver_nodes != []:
-            assert all([i in range(len(self.fp_coords)) for i in self.receiver_nodes]), \
+            assert all([i in range(len(self.receiver_coordinates)) for i in self.receiver_nodes]), \
             'At least one receiver node exceeds the number of receiver nodes in the database.'
         else:
             print('   Selected all receiver nodes in the database.')
-
-
-# def load_fp_data(nznodes, field_points):
-#     nfp = len(field_points)
-#     data_shape = File('../TFs_flat_slab/node_' + str(nznodes[0]) + '_p_fp.hdf5', 'r')['field_pressure'].shape
-#     data = np.zeros((len(nznodes), data_shape[0], data_shape[1], data_shape[2], nfp), dtype=complex)
-#     for node in range(len(nznodes)):
-#         data[node] = File('../TFs_flat_slab/node_' + str(nznodes[node]) + '_p_fp.hdf5', 'r')['field_pressure'][..., field_points]
-#     return data
-
-# def prep_rail_acoustic_TFs_surf(nznodes, frequencies, data):
-#     """
-#     reads each rail acoustic TF from database
-#     combines them in a matrix for the desired field points
-#     """
-#     nnznodes = nznodes.shape[0]
-# #     nsp = 1628
-#     nsp = 64
-#     # extact the transfer function for one node in both directions,
-#     # interpolate in frequency to match frequency vector of solver
-#     freq_db = np.arange(0, 7500, 0.5)
-#     nf_db = freq_db.shape[0]
-#     nf = frequencies.shape[0]
-
-#     tf = np.zeros((nf, 2, nnznodes, nsp), dtype=complex)
-#     for node in range(nnznodes):
-#         file_handle = data[node]
-#         print('reading acoustic tf from database for node ', nznodes[node])
-#         for diri in [0, 1]:
-#             for sp in range(nsp): 
-# #                 if (sp % 500 == 0):
-# #                     print("interpolating at surface_point "+str(sp))
-#                 sp_interp = interp_complex(frequencies, freq_db, file_handle[:, 0, diri, sp], left=None)
-#                 tf[:, diri, node, sp] = sp_interp
-#     return tf
