@@ -15,15 +15,15 @@ class Database():
             print('Successfully loaded the database.')
 
     def load_data(self):
-        fh = File(self.filepath, 'r')
-        self._tf_base = fh['tfs']
-        self._f_base = fh['info/f'][()]
-        self.k0 = fh['info/k0'][()]
-        self.source_coordinates = fh['info/source_coordinates'][()]
-        self.normal_vectors = fh['info/normal_vectors'][()]
-        self.receiver_coordinates = fh['info/receiver_coordinates'][()]
-        self._source_nodes = fh['info/source_nodes'][()]  # these are the nodes available in the database
-        self._receiver_nodes = np.arange(len(self.receiver_coordinades))
+        with File(self.filepath, 'r') as fh:
+            self._tf_base = fh['tfs'][()]
+            self._f_base = fh['info/f'][()]
+            self.k0 = fh['info/k0'][()]
+            self.source_coordinates = fh['info/source_coordinates'][()]
+            self.normal_vectors = fh['info/normal_vectors'][()]
+            self.receiver_coordinates = fh['info/receiver_coordinates'][()]
+            self._source_nodes = fh['info/source_nodes'][()]  # these are the nodes available in the database
+            self._receiver_nodes = np.arange(len(self.receiver_coordinates))
         return True
 
     def setup(self, f, k, receiver_nodes=[], source_nodes=[]):
@@ -58,12 +58,12 @@ class Database():
                   n_in can be different load cases, e.g. vertical and lateral load or different nodes
                   n_source should be equivalent to the number of source nodes in the database
         """
-        f = Interp1d_complex(self._f_base[()], 
+        f = Interp1d_complex(self._f_base, 
                              self._tf_base[self.receiver_nodes][:, self.source_nodes],
                              assume_sorted=True, copy=False, fill_value=0, bounds_error=False)
         self.response = np.zeros((Vn.shape[0], Vn.shape[1], Vn.shape[2], self._nrn), dtype=complex)
         for fi, freq in enumerate(self.f):
-            jomega = (1j * 2 * np.pi * freq)**2
+            jomega = (1j * 2 * np.pi * freq)
             for ki, k in enumerate(self.k[fi]):
                 f0 = f0_shift(k, self.k0, freq)
                 r = f(f0)  # receiver_nodes, source_nodes
