@@ -1,6 +1,5 @@
 ## This is an implementation of a 1D complex interpolation in cython
 import numpy as np
-from numpy.core.umath import arctan2
 from scipy.interpolate import interp1d
 
 
@@ -14,13 +13,13 @@ class Interp1d_complex():
     def __init__(self, x, y, kind='linear', axis=-1,
                  copy=True, bounds_error=None, fill_value=np.nan,
                  assume_sorted=False):
-        self.magint = interp1d(x, np.abs(y), kind, axis, copy, bounds_error, fill_value, assume_sorted)
-        self.phaseint = interp1d(x, arctan2(y.imag, y.real), kind, axis, copy, bounds_error, fill_value, assume_sorted)
+        self.realint = interp1d(x, y.real, kind, axis, copy, bounds_error, fill_value, assume_sorted)
+        self.imagint = interp1d(x, y.imag, kind, axis, copy, bounds_error, fill_value, assume_sorted)
     
     def __call__(self, ynew):
-        phasenew = self.phaseint(ynew)
-        magnew = self.magint(ynew)
-        return self.magint(ynew) * (np.cos(phasenew) + 1j * np.sin(phasenew))
+        realnew = self.realint(ynew)
+        imagnew = self.imagint(ynew)
+        return self.realint(ynew) + 1j * self.imagint(ynew)
 
 
 def fn_shift(kn, k0, f0):
