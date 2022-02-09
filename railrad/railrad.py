@@ -1,8 +1,9 @@
 from h5py import File
 import numpy as np
 from .helpers import *
+from scipy.io import savemat, loadmat
 
-# __all__ = ['Database']
+__all__ = ['Database', 'load_from_mat']
 
 class Database():
     def __init__(self, filepath ='.'):
@@ -46,6 +47,7 @@ class Database():
         self.k = k
         self._check_f_range()
         self._nf = len(f)
+        self._nk = k.shape[1]
 
     def superpose(self, Vn):
         """
@@ -69,6 +71,31 @@ class Database():
                 r = f(f0)  # receiver_nodes, source_nodes
                 self.response[fi, ki, :, :] = np.einsum('is, rs -> ir', Vn[fi, ki], r) * jomega
 
+    def return_tfs(self):
+        """
+        return the acoustic transfer functions as a 
+        by summing over the source nodes
+
+        tfs has the shape n_f x n_k x n_receiver x n_source
+            where n_f is the number of frequency bins in the spectrum
+                  n_k is the number of wavenumbers at each frequency line,
+                  n_source should be equivalent to the number of source nodes in the database
+                  n_receiver is the number of receiver points
+        """
+        f = Interp1d_complex(self._f_base, 
+                             self._tf_base[self.receiver_nodes][:, self.source_nodes],
+                             assume_sorted=True, copy=False, fill_value=0, bounds_error=False)
+        tfs = np.zeros((self._nf, self._nk, self._nrn, self._nsn), dtype=complex)
+        for fi, freq in enumerate(self.f):
+            jomega = (1j * 2 * np.pi * freq)
+            for ki, k in enumerate(self.k[fi]):
+                f0 = f0_shift(k, self.k0, freq)
+                r = f(f0)  # receiver_nodes, source_nodes
+                tfs[fi, ki, :, :] = r * jomega
+        return tfs
+
+    def save_to_mat(self, filename):
+        savemat(filename, {'db':self})
 
     def _check_f_range(self):
         if min(self.f) < min(self._f_base):
@@ -88,3 +115,9 @@ class Database():
             'At least one receiver node exceeds the number of receiver nodes in the database.'
         else:
             print('   Selected all receiver nodes in the database.')
+
+def load_from_mat(filename):
+    db_temp = _struct_to_dict(loadmat(filename)['db'])
+    db = railrad.railrad.Database(db_temp['filepath'])
+    db.__dict__.update(db_temp)
+    return db
