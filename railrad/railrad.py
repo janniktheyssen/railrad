@@ -1,8 +1,9 @@
 from h5py import File
 import numpy as np
 from .helpers import *
+from scipy.io import savemat, loadmat
 
-# __all__ = ['Database']
+__all__ = ['Database', 'load_from_mat']
 
 class Database():
     def __init__(self, filepath ='.'):
@@ -72,7 +73,7 @@ class Database():
 
     def return_tfs(self, f_index=[], k_index=[], receiver_nodes=[], source_nodes=[]):
         """
-        return the acoustic transfer functions as a 
+        return the acoustic transfer functions
 
         tfs has the shape n_f x n_k x n_receiver x n_source
             where n_f is the number of frequency bins in the spectrum
@@ -102,6 +103,9 @@ class Database():
                 tfs[fi, ki, :, :] = r * jomega
         return tfs
 
+    def save_to_mat(self, filename):
+        savemat(filename, {'db':self})
+
     def _check_f_range(self):
         if min(self.f) < min(self._f_base):
             print('Minimum f is smaller than the smallest f in the database. Results may be inaccurate.')
@@ -120,3 +124,9 @@ class Database():
             'At least one receiver node exceeds the number of receiver nodes in the database.'
         else:
             print('   Selected all receiver nodes in the database.')
+
+def load_from_mat(filename):
+    db_temp = _struct_to_dict(loadmat(filename)['db'])
+    db = Database(db_temp['filepath'])
+    db.__dict__.update(db_temp)
+    return db
