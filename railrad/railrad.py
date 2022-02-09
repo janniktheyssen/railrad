@@ -118,6 +118,6 @@ class Database():
 
 def load_from_mat(filename):
     db_temp = _struct_to_dict(loadmat(filename)['db'])
-    db = railrad.railrad.Database(db_temp['filepath'])
+    db = Database(db_temp['filepath'])
     db.__dict__.update(db_temp)
     return db
