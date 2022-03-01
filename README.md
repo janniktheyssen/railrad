@@ -53,9 +53,22 @@ then reads a previously saved database file from the .mat file.
 
 ## The geometries
 
-The acoustic transfer functions have as of now been pre-calculated for four geometries. Each of the geometries are described by their source nodes and receiver nodes. The location and index of each node is displayed in the associated figures.
+The acoustic transfer functions have as of now been pre-calculated for four geometries. Each of the geometries are described by their source nodes and receiver nodes. The location and index of each node is displayed in the associated figures. The receiver nodes are displayed in black and the CHIEF points used in the BE-formulation are displayed in red. The source nodes are either orange or blue.
 
-1. A free rail [![free rail - free field](docs/figures/free-rail_free-field_nodes.pdf)](docs/figures/free-rail_free-field_nodes.html)
+1. A UIC60 rail geometry in an acoustic free field,
 
+<iframe height="420" width="550" src="doc/figures/rail_free-field_nodes.html"> </iframe>
+
+2. A UIC60 rail geometry in an acoustic half-space with an acoustically hard boundary condition 5 cm below the foot of the rail,
+
+<iframe height="420" width="1000" src="doc/figures/rail_half-space_nodes.html"> </iframe>
+
+3. A UIC60 rail with 5 cm distance to the top of a flat track surface,
+
+<iframe height="420" width="550" src="doc/figures/rail-on-slab_half-space_nodes.html"> </iframe>
+
+4. A UIC60 rail with 5 cm distance to the top of a flat track surface and below an approximated hull of a passenger train,
+
+<iframe height="420" width="550" src="doc/figures/rail-slab-train_half-space_nodes.html"> </iframe>
 
 
