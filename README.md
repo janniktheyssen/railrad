@@ -57,7 +57,7 @@ The acoustic transfer functions have as of now been pre-calculated for four geom
 
 1. A UIC60 rail geometry in an acoustic free field,
 
-<iframe height="420" width="550" src="doc/figures/rail_free-field_nodes.html"> </iframe>
+![](doc/figures/rail-slab-train_half-space_nodes.svg)
 
 2. A UIC60 rail geometry in an acoustic half-space with an acoustically hard boundary condition 5 cm below the foot of the rail,
 
