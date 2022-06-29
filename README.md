@@ -8,7 +8,7 @@ The total complex sound pressure in a receiver point can be found by multiplicat
 
 ## The Database class
 
-Create a Class object to manage access to and processing of a database of pre-calculated transfer functions via 
+Create a database instance to manage access to and processing of a database of pre-calculated transfer functions via 
     
     DB = Database(path)
 
@@ -68,4 +68,5 @@ The acoustic transfer functions have as of now been pre-calculated for four geom
 3. A UIC60 rail with 5 cm distance to the top of a flat track surface,
 4. A UIC60 rail with 5 cm distance to the top of a flat track surface and below an approximated hull of a passenger train.
 
-The best way to explore these geometries is to create a database and plot the source and receiver nodes as shown [in this notebook](doc/figures/Railrad_demonstration.ipynb).
+The best way to explore these geometries is to create a database and plot the source and receiver nodes as shown [in this notebook](doc/Railrad_demonstration.ipynb).
+[Here](doc/circle_demo.hdf5) is the database used in the example. Note: only 3 receiver locations are included in this example due to storage limitations on GitHub.
