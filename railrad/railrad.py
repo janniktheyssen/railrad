@@ -22,8 +22,9 @@ class Database():
             self.k0 = fh['info/k0'][()]
             self.source_coordinates = fh['info/source_coordinates'][()]
             self.normal_vectors = fh['info/normal_vectors'][()]
-            self.receiver_coordinates = fh['info/receiver_coordinates'][()]
-            self._source_nodes = fh['info/source_nodes'][()]  # these are the nodes available in the database
+            self.receiver_coordinates = fh['info/receiver_coordinates'][()] 
+            # these are the nodes available in the database:
+            self._source_nodes = fh['info/source_nodes'][()]
             self._receiver_nodes = np.arange(len(self.receiver_coordinates))
         return True
 
@@ -51,14 +52,19 @@ class Database():
 
     def superpose(self, Vn):
         """
-        Superpose acoustic transfer functions with surface normal velocities
-        by summing over the source nodes
+        Superpose contributions from all source points to the complex pressures
+        at receiver points by multiplication of the acoustic transfer functions
+        with surface normal velocities and summing over the source nodes.
 
         Vn has the shape n_f x n_k x n_in x n_source
             where n_f is the number of frequency bins in the spectrum
                   n_k is the number of wavenumbers at each frequency line,
                   n_in can be different load cases, e.g. vertical and lateral load or different nodes
                   n_source should be equivalent to the number of source nodes in the database
+
+        Store superposed complex pressure in a matrix at self.response
+            which has the shape n_f x n_k x n_receiver
+
         """
         f = Interp1d_complex(self._f_base, 
                              self._tf_base[self.receiver_nodes][:, self.source_nodes],
@@ -105,8 +111,9 @@ class Database():
 
     def tfs_to_hdf5(self, filename, f_index=[], k_index=[], receiver_nodes=[], source_nodes=[]):
         """
-        Store the acoustic transfer functions in a file, writing one frequency line at once.
-        Useful for large matrices.
+        As 'return_tfs', but store the acoustic transfer functions in a file, 
+        writing one frequency line at once. Useful for large matrices and computers with
+        limited working memory.
 
         tfs has the shape n_f x n_k x n_receiver x n_source
             where n_f is the number of frequency bins in the spectrum
@@ -142,15 +149,27 @@ class Database():
 
 
     def save_to_mat(self, filename):
+        """
+        Save database to .mat file. Note that this might raise errors for 
+        databases larger than 4 GB.
+        """
         savemat(filename, {'db':self})
 
     def _check_f_range(self):
+        """
+        If the desired frequency range exceeds the pre-calculated frequency range in the database,
+        the error in the interpolation is likely larger than desired. 
+        This function checks if that is the case and prints a warning.
+        """
         if min(self.f) < min(self._f_base):
             print('Minimum f is smaller than the smallest f in the database. Results may be inaccurate.')
         if max(self.f) > max(self._f_base):
             print('Maximum f is larger than the largest f in the database. Results may be inaccurate.')
 
     def _check_nodes(self):
+        """
+        Check if the specified source node indices are valid inputs.
+        """
         if self.source_nodes != []:
             assert all([i in self._source_nodes for i in self.source_nodes]), \
             'At least one source node not in database.'
@@ -164,6 +183,9 @@ class Database():
             print('   Selected all receiver nodes in the database.')
 
 def load_from_mat(filename):
+    """
+    Load a previously saved Database from a .mat file.
+    """
     db_temp = _struct_to_dict(loadmat(filename)['db'])
     db = Database(db_temp['filepath'])
     db.__dict__.update(db_temp)

@@ -22,12 +22,24 @@ class Interp1d_complex():
         return self.realint(ynew) + 1j * self.imagint(ynew)
 
 
+def f0_shift(kn, k0, fn):
+    """
+    Calculate the frequency f0 in the reference spectrum evaluated with the
+    wavenumber along the track k0, at which alpha, the projection of the wavenumber 
+    in air (K0) on the 2D track cross-section, equals the alpha for the given
+    combination of frequency fn and wavenumber along the track kn.
+
+    Returns -1 if no such frequency exists for real solutions of the square root (near field radiation).
+    """
+    return np.nan_to_num(np.sqrt(fn**2 - (kn**2 - k0**2) * 343**2 / ((2*np.pi)**2)), copy=False, nan=-1)
+
+
 def fn_shift(kn, k0, f0):
-    return np.sqrt(((kn)**2 - (k0)**2) * 343**2 / ((2*np.pi)**2) + f0**2)
-
-
-def f0_shift(k, k0, fn):
-    return np.nan_to_num(np.sqrt(fn**2 - (k**2 - (k0)**2) * 343**2 / ((2*np.pi)**2)), copy=False, nan=-1)
+    """
+    Like f0_shift, but in reverse: for a given kn, calculate the frequency fn 
+    with the same alpha as the combination k0 and f0
+    """
+    return np.sqrt((kn**2 - k0**2) * 343**2 / ((2*np.pi)**2) + f0**2)
 
 
 def _struct_to_dict(struct):
